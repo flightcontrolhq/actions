@@ -1,0 +1,25 @@
+name: Setup Go
+description: Install a specific version of Go
+
+inputs:
+  go-version:
+    description: Go version to install
+    required: false
+    default: "1.21"
+
+dependencyTemplates:
+  - name: go
+    package: golang
+    installMethod: binary-download
+    checkBinary: go
+    binaryDownload:
+      url: https://go.dev/dl/go${{ inputs.go-version }}.linux-$ARCH.tar.gz
+      archiveFormat: tar.gz
+      installPath: /usr/local
+      architectureSpecific:
+        amd64: amd64
+        arm64: arm64
+    postInstall:
+      - export PATH=$PATH:/usr/local/go/bin
+
+instructions: []

@@ -1,0 +1,19 @@
+name: Setup Ruby
+description: Install a specific version of Ruby
+
+inputs:
+  ruby-version:
+    description: Ruby version to install
+    required: false
+    default: "3.2"
+
+dependencyTemplates:
+  - name: ruby
+    package: ruby${{ inputs.ruby-version }}
+    version: ${{ inputs.ruby-version }}
+    checkBinary: ruby
+    alternativePackages:
+      - ruby${{ inputs.ruby-version }}-dev
+      - rubygems${{ inputs.ruby-version }}
+
+instructions: []

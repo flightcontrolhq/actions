@@ -1,0 +1,23 @@
+name: Setup Terraform
+description: Install a specific version of Terraform
+
+inputs:
+  terraform-version:
+    description: Terraform version to install
+    required: false
+    default: "1.6.0"
+
+dependencyTemplates:
+  - name: terraform
+    package: terraform
+    installMethod: binary-download
+    checkBinary: terraform
+    binaryDownload:
+      url: https://releases.hashicorp.com/terraform/${{ inputs.terraform-version }}/terraform_${{ inputs.terraform-version }}_linux_$ARCH.zip
+      archiveFormat: zip
+      installPath: /usr/local/bin
+      architectureSpecific:
+        amd64: amd64
+        arm64: arm64
+
+instructions: []

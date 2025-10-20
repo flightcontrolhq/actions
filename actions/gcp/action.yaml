@@ -1,0 +1,23 @@
+name: Setup Google Cloud SDK
+description: Install Google Cloud SDK with gcloud, gsutil, and bq
+
+inputs:
+  gcloud-version:
+    description: Google Cloud SDK version to install (use 'latest' for latest version)
+    required: false
+    default: "latest"
+
+dependencyTemplates:
+  - name: gcloud
+    package: google-cloud-sdk
+    installMethod: install-script
+    checkBinary: gcloud
+    installScript:
+      url: https://sdk.cloud.google.com
+      args: --disable-prompts --install-dir=/usr/local
+    postInstall:
+      - export PATH=$PATH:/usr/local/google-cloud-sdk/bin
+      - gcloud config set core/disable_usage_reporting true
+      - gcloud config set component_manager/disable_update_check true
+
+instructions: []
