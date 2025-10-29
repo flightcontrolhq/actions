@@ -5,11 +5,10 @@ inputs:
   terraform-version:
     description: Terraform version to install
     required: false
-    default: "1.6.0"
+    default: "1.6.6"
 
 dependencyTemplates:
   - name: terraform
-    package: terraform
     installMethod: binary-download
     checkBinary: terraform
     binaryDownload:
