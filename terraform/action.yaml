@@ -15,9 +15,8 @@ dependencyTemplates:
     binaryDownload:
       url: https://releases.hashicorp.com/terraform/${{ inputs.terraform-version }}/terraform_${{ inputs.terraform-version }}_linux_$ARCH.zip
       archiveFormat: zip
+      binaryPath: terraform
       installPath: /usr/local/bin
-      architectureSpecific:
-        amd64: amd64
-        arm64: arm64
+      executableName: terraform
 
 instructions: []
