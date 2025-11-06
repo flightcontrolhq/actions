@@ -1,0 +1,78 @@
+name: Nixpacks Setup
+description: Install Nixpacks binary and setup environment for building
+
+inputs:
+  nixpacks-version:
+    description: Nixpacks version to install
+    required: false
+    default: "1.21.3"
+
+  ecr-registry:
+    description: ECR registry URL for pushing images
+    required: true
+
+  aws-region:
+    description: AWS region for ECR
+    required: false
+    default: us-east-1
+
+dependencies:
+  - name: docker
+    checkBinary: docker
+
+  - name: aws-cli
+    package: awscli
+    checkBinary: aws
+
+  - name: curl
+    package: curl
+    checkBinary: curl
+
+  - name: tar
+    package: tar
+    checkBinary: tar
+
+dependencyTemplates:
+  - name: nixpacks
+    installMethod: binary-download
+    checkBinary: nixpacks
+    binaryDownload:
+      url: https://github.com/railwayapp/nixpacks/releases/download/v${{ inputs.nixpacks-version }}/nixpacks-v${{ inputs.nixpacks-version }}-x86_64-unknown-linux-gnu.tar.gz
+      archiveFormat: tar.gz
+      binaryPath: nixpacks
+      installPath: /usr/local/bin
+      executableName: nixpacks
+      permissions: "755"
+
+instructions:
+  # ECR login for pushing Nixpacks-built images
+  - type: command
+    command: |
+      echo "Logging into ECR registry: ${{ inputs.ecr-registry }}"
+      aws ecr get-login-password --region ${{ inputs.aws-region }} | \
+      docker login --username AWS --password-stdin ${{ inputs.ecr-registry }}
+
+  # Verify Nixpacks installation
+  - type: command
+    command: |
+      echo "Verifying Nixpacks installation..."
+      nixpacks --version
+      echo "Nixpacks successfully installed"
+
+  # Setup Docker buildx for Nixpacks (it uses Docker under the hood)
+  - type: command
+    command: |
+      # Nixpacks uses Docker, so ensure buildx is available
+      if ! docker buildx version > /dev/null 2>&1; then
+        echo "Setting up Docker buildx for Nixpacks..."
+        docker run --rm --privileged docker/binfmt:latest --install all
+      fi
+
+      # Create or use existing buildx builder
+      if ! docker buildx ls | grep -q fc-nixpacks-builder; then
+        docker buildx create --use --driver docker-container --name fc-nixpacks-builder --platform linux/amd64,linux/arm64
+      else
+        docker buildx use fc-nixpacks-builder
+      fi
+
+      docker buildx inspect --bootstrap
