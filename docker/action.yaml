@@ -127,8 +127,11 @@ instructions:
   - type: command
     command: |
       echo "Logging into ECR registry: ${{ inputs.ecr-registry }}"
-      aws ecr get-login-password --region ${{ inputs.aws-region }} | \
-      docker login --username AWS --password-stdin ${{ inputs.ecr-registry }}
+      # Set AWS region environment variables for AWS CLI
+      export AWS_REGION="${{ inputs.aws-region }}"
+      export AWS_DEFAULT_REGION="${{ inputs.aws-region }}"
+      aws ecr get-login-password --region "${{ inputs.aws-region }}" | \
+      docker login --username AWS --password-stdin "${{ inputs.ecr-registry }}"
 
   # Optional Docker Hub login
   - type: command
