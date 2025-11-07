@@ -1,16 +1,7 @@
 name: Docker Setup
-description: Setup Docker with buildx and ECR authentication
+description: Setup Docker with buildx
 
 inputs:
-  ecr-registry:
-    description: ECR registry URL (e.g., 123456789.dkr.ecr.us-east-1.amazonaws.com)
-    required: true
-
-  aws-region:
-    description: AWS region for ECR
-    required: false
-    default: us-east-1
-
   docker-hub-login:
     description: Enable Docker Hub login (requires DOCKER_USERNAME and DOCKER_PASSWORD env vars)
     required: false
@@ -29,10 +20,6 @@ dependencies:
       - sudo systemctl start docker
       - sudo systemctl enable docker
       - sudo usermod -aG docker $USER || true
-
-  - name: aws-cli
-    package: awscli
-    checkBinary: aws
 
 instructions:
   # Setup Docker buildx - remote builder
@@ -122,16 +109,6 @@ instructions:
 
       # Bootstrap the active builder
       docker buildx inspect --bootstrap
-
-  # ECR login
-  - type: command
-    command: |
-      echo "Logging into ECR registry: ${{ inputs.ecr-registry }}"
-      # Set AWS region environment variables for AWS CLI
-      export AWS_REGION="${{ inputs.aws-region }}"
-      export AWS_DEFAULT_REGION="${{ inputs.aws-region }}"
-      aws ecr get-login-password --region "${{ inputs.aws-region }}" | \
-      docker login --username AWS --password-stdin "${{ inputs.ecr-registry }}"
 
   # Optional Docker Hub login
   - type: command
