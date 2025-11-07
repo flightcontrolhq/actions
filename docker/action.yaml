@@ -19,6 +19,11 @@ inputs:
 dependencies:
   - name: docker
     checkBinary: docker
+    postInstall:
+      - sudo systemctl daemon-reload
+      - sudo systemctl start docker
+      - sudo systemctl enable docker
+      - sudo usermod -aG docker $USER || true
 
   - name: aws-cli
     package: awscli
