@@ -11,6 +11,10 @@ inputs:
     description: ECR registry URL for pushing images
     required: true
 
+  aws-region:
+    description: AWS region for ECR
+    required: true
+
 dependencies:
   - name: docker
     checkBinary: docker
@@ -41,11 +45,10 @@ dependencyTemplates:
 
 instructions:
   # ECR login for pushing Nixpacks-built images
-  # AWS CLI automatically uses region from IAM instance profile metadata
   - type: command
     command: |
       echo "Logging into ECR registry: ${{ inputs.ecr-registry }}"
-      aws ecr get-login-password | \
+      aws ecr get-login-password --region ${{ inputs.aws-region }} | \
       docker login --username AWS --password-stdin ${{ inputs.ecr-registry }}
 
   # Verify Nixpacks installation
