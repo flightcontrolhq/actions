@@ -16,6 +16,11 @@ inputs:
     required: false
     default: "false"
 
+  debug:
+    description: Enable debug mode for buildx builder
+    required: false
+    default: "false"
+
 dependencies:
   - name: docker
     checkBinary: docker
@@ -30,7 +35,7 @@ dependencies:
     checkBinary: aws
 
 instructions:
-  # Setup Docker buildx
+  # Setup Docker buildx - remote builder
   - type: command
     command: |
       # Check if buildx is available
@@ -39,14 +44,83 @@ instructions:
         docker run --rm --privileged docker/binfmt:latest --install all
       fi
 
-      # Create or use existing buildx builder
-      if ! docker buildx ls | grep -q fc-builder; then
-        docker buildx create --use --driver docker-container --name fc-builder --platform linux/amd64,linux/arm64
-      else
-        docker buildx use fc-builder
+      # Create remote builder if it doesn't exist
+      if ! docker buildx ls | grep -q "fc-builder "; then
+        echo "Creating remote builder: fc-builder"
+        docker buildx create --name fc-builder --driver=remote --use unix://$HOME/buildkitd.sock
       fi
 
-      # Bootstrap the builder
+  # Create buildkitd.toml configuration
+  - type: command
+    command: |
+      cat > ./buildkitd.toml << 'EOF'
+      [worker.containerd]
+      enabled = false
+
+      [worker.oci]
+      max_parallelism = 16
+      enabled = true
+      gc = true
+      snapshotter = "overlayfs"
+      cpuset_cpus = "0-14"        # Use CPUs 0 to 14, which is 15 vCPUs
+      cpu_quota = 1500000         # Allow 15 vCPUs worth of CPU time every 100 ms
+      cpu_period = 100000         # 100 ms period
+      cpu_shares = 1024           # Relative weight for CPU time (higher means more priority)
+      cpus = 15                   # Limit to 15 vCPUs
+
+      [[worker.oci.gcpolicy]]
+        filters = ["type==source.local", "type==exec.cachemount", "type==source.git.checkout"]
+        keepBytes = 161061273600  # 85 GB, expressed in bytes
+
+      [[worker.oci.gcpolicy]]
+        all = true
+        keepBytes = 161061273600  # 85 GB, expressed in bytes
+      EOF
+      echo "Created buildkitd.toml configuration"
+
+  # Create docker-container builder (normal)
+  - type: command
+    command: |
+      if ! docker buildx ls | grep -q "fc-builder-container "; then
+        echo "Creating docker-container builder: fc-builder-container"
+        docker buildx create --name fc-builder-container \
+          --driver=docker-container \
+          --node fc-builder-container \
+          --config ./buildkitd.toml
+      fi
+
+  # Create docker-container builder (debug)
+  - type: command
+    command: |
+      if ! docker buildx ls | grep -q "fc-builder-container-debug "; then
+        echo "Creating docker-container builder: fc-builder-container-debug"
+        docker buildx create --name fc-builder-container-debug \
+          --driver=docker-container \
+          --buildkitd-flags='--debug' \
+          --node fc-builder-container-debug \
+          --config ./buildkitd.toml
+      fi
+
+  # Switch to appropriate builder based on debug flag
+  - type: command
+    command: |
+      if [ "${{ inputs.debug }}" = "true" ]; then
+        echo "Using debug builder: fc-builder-container-debug"
+        ACTIVE_BUILDER="fc-builder-container-debug"
+        INACTIVE_CONTAINER="buildx_buildkit_fc-builder-container"
+      else
+        echo "Using normal builder: fc-builder-container"
+        ACTIVE_BUILDER="fc-builder-container"
+        INACTIVE_CONTAINER="buildx_buildkit_fc-builder-container-debug"
+      fi
+
+      # Stop the inactive builder's container if it's running
+      docker stop "$INACTIVE_CONTAINER" 2>/dev/null || true
+
+      # Use the active builder
+      docker buildx use "$ACTIVE_BUILDER"
+
+      # Bootstrap the active builder
       docker buildx inspect --bootstrap
 
   # ECR login
