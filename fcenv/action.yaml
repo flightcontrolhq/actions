@@ -1,0 +1,49 @@
+name: fcenv Setup
+description: Install fcenv for loading environment variables from AWS Parameter Store and Secrets Manager
+
+inputs:
+  fcenv-version:
+    description: fcenv Docker image version/tag to use
+    required: false
+    default: "latest"
+
+dependencies:
+  - name: docker
+    checkBinary: docker
+    postInstall:
+      - sudo systemctl daemon-reload
+      - sudo systemctl start docker
+      - sudo systemctl enable docker
+      - sudo usermod -aG docker $USER || true
+
+instructions:
+  # Pull and extract fcenv binary from Docker image
+  - type: command
+    command: |
+      echo "Installing fcenv version: ${{ inputs.fcenv-version }}"
+
+      # Pull the fcenv Docker image
+      docker pull public.ecr.aws/a8z1i1r2/flightcontrol/fcenv:${{ inputs.fcenv-version }}
+
+      # Create a temporary container to extract the binary (with dummy command)
+      docker create --name fcenv-extract public.ecr.aws/a8z1i1r2/flightcontrol/fcenv:${{ inputs.fcenv-version }} /bin/sh
+
+      # Copy the fcenv binary from the container to a temporary location
+      docker cp fcenv-extract:/app/fcenv /tmp/fcenv
+
+      # Clean up the temporary container
+      docker rm fcenv-extract
+
+      # Move to /usr/local/bin with sudo and make executable
+      sudo mv /tmp/fcenv /usr/local/bin/fcenv
+      sudo chmod +x /usr/local/bin/fcenv
+
+      # Verify installation
+      if [ -f /usr/local/bin/fcenv ]; then
+        echo "fcenv successfully installed at: /usr/local/bin/fcenv"
+        # Note: fcenv doesn't have a --version flag, so we just check it exists
+        ls -la /usr/local/bin/fcenv
+      else
+        echo "Error: fcenv installation failed"
+        exit 1
+      fi
