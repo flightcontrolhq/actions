@@ -2,10 +2,10 @@ name: Setup OpenTofu
 description: Install a specific version of OpenTofu
 
 inputs:
-  tofu-version:
+  opentofu-version:
     description: OpenTofu version to install
     required: false
-    default: "1.6.0"
+    default: "1.11.5"
 
 dependencyTemplates:
   - name: tofu
@@ -13,7 +13,7 @@ dependencyTemplates:
     installMethod: binary-download
     checkBinary: tofu
     binaryDownload:
-      url: https://github.com/opentofu/opentofu/releases/download/v${{ inputs.tofu-version }}/tofu_${{ inputs.tofu-version }}_linux_$ARCH.tar.gz
+      url: https://github.com/opentofu/opentofu/releases/download/v${{ inputs.opentofu-version }}/tofu_${{ inputs.opentofu-version }}_linux_$ARCH.tar.gz
       archiveFormat: tar.gz
       installPath: /usr/local/bin
       architectureSpecific:
