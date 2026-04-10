@@ -57,21 +57,3 @@ instructions:
       echo "Verifying Nixpacks installation..."
       nixpacks --version
       echo "Nixpacks successfully installed"
-
-  # Setup Docker buildx for Nixpacks (it uses Docker under the hood)
-  - type: command
-    command: |
-      # Nixpacks uses Docker, so ensure buildx is available
-      if ! docker buildx version > /dev/null 2>&1; then
-        echo "Setting up Docker buildx for Nixpacks..."
-        docker run --rm --privileged docker/binfmt:latest --install all
-      fi
-
-      # Create or use existing buildx builder
-      if ! docker buildx ls | grep -q fc-nixpacks-builder; then
-        docker buildx create --use --driver docker-container --name fc-nixpacks-builder --platform linux/amd64,linux/arm64
-      else
-        docker buildx use fc-nixpacks-builder
-      fi
-
-      docker buildx inspect --bootstrap
