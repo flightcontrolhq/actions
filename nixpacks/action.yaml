@@ -7,10 +7,6 @@ inputs:
     required: false
     default: 1.41.0
 
-  ecr-registry:
-    description: ECR registry URL for pushing images
-    required: true
-
   aws-region:
     description: AWS region for ECR
     required: true
