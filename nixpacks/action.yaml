@@ -5,6 +5,7 @@ inputs:
   nixpacks-version:
     description: Nixpacks version to install
     required: false
+    default: 1.41.0
 
   ecr-registry:
     description: ECR registry URL for pushing images
