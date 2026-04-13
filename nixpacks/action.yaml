@@ -7,10 +7,6 @@ inputs:
     required: false
     default: 1.41.0
 
-  aws-region:
-    description: AWS region for ECR
-    required: true
-
 dependencies:
   - name: docker
     checkBinary: docker
