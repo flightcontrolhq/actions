@@ -43,14 +43,6 @@ dependencyTemplates:
       executableName: nixpacks
       permissions: "755"
 
-instructions:
-  # ECR login for pushing Nixpacks-built images
-  - type: command
-    command: |
-      echo "Logging into ECR registry: ${{ inputs.ecr-registry }}"
-      aws ecr get-login-password --region ${{ inputs.aws-region }} | \
-      docker login --username AWS --password-stdin ${{ inputs.ecr-registry }}
-
   # Verify Nixpacks installation
   - type: command
     command: |
