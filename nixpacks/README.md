@@ -6,7 +6,7 @@ Installs Nixpacks binary and configures the environment for building application
 
 | Name | Description | Required | Default |
 |------|-------------|----------|---------|
-| `nixpacks-version` | Nixpacks version to install | No | `1.21.3` |
+| `nixpacks-version` | Nixpacks version to install | No | `1.41.0` |
 | `ecr-registry` | ECR registry URL for pushing images | Yes | - |
 | `aws-region` | AWS region for ECR | No | `us-east-1` |
 
