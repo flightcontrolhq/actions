@@ -32,9 +32,9 @@ instructions:
       fi
 
       # Create remote builder if it doesn't exist
-      if ! docker buildx ls | grep -q "fc-builder "; then
-        echo "Creating remote builder: fc-builder"
-        docker buildx create --name fc-builder --driver=remote --use unix://$HOME/buildkitd.sock
+      if ! docker buildx ls | grep -q "rvn-builder "; then
+        echo "Creating remote builder: rvn-builder"
+        docker buildx create --name rvn-builder --driver=remote --use unix://$HOME/buildkitd.sock
       fi
 
   # Create buildkitd.toml configuration
@@ -68,23 +68,23 @@ instructions:
   # Create docker-container builder (normal)
   - type: command
     command: |
-      if ! docker buildx ls | grep -q "fc-builder-container "; then
-        echo "Creating docker-container builder: fc-builder-container"
-        docker buildx create --name fc-builder-container \
+      if ! docker buildx ls | grep -q "rvn-builder-container "; then
+        echo "Creating docker-container builder: rvn-builder-container"
+        docker buildx create --name rvn-builder-container \
           --driver=docker-container \
-          --node fc-builder-container \
+          --node rvn-builder-container \
           --config ./buildkitd.toml
       fi
 
   # Create docker-container builder (debug)
   - type: command
     command: |
-      if ! docker buildx ls | grep -q "fc-builder-container-debug "; then
-        echo "Creating docker-container builder: fc-builder-container-debug"
-        docker buildx create --name fc-builder-container-debug \
+      if ! docker buildx ls | grep -q "rvn-builder-container-debug "; then
+        echo "Creating docker-container builder: rvn-builder-container-debug"
+        docker buildx create --name rvn-builder-container-debug \
           --driver=docker-container \
           --buildkitd-flags='--debug' \
-          --node fc-builder-container-debug \
+          --node rvn-builder-container-debug \
           --config ./buildkitd.toml
       fi
 
@@ -92,13 +92,13 @@ instructions:
   - type: command
     command: |
       if [ "${{ inputs.debug }}" = "true" ]; then
-        echo "Using debug builder: fc-builder-container-debug"
-        ACTIVE_BUILDER="fc-builder-container-debug"
-        INACTIVE_CONTAINER="buildx_buildkit_fc-builder-container"
+        echo "Using debug builder: rvn-builder-container-debug"
+        ACTIVE_BUILDER="rvn-builder-container-debug"
+        INACTIVE_CONTAINER="buildx_buildkit_rvn-builder-container"
       else
-        echo "Using normal builder: fc-builder-container"
-        ACTIVE_BUILDER="fc-builder-container"
-        INACTIVE_CONTAINER="buildx_buildkit_fc-builder-container-debug"
+        echo "Using normal builder: rvn-builder-container"
+        ACTIVE_BUILDER="rvn-builder-container"
+        INACTIVE_CONTAINER="buildx_buildkit_rvn-builder-container-debug"
       fi
 
       # Stop the inactive builder's container if it's running
