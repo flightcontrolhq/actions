@@ -1,0 +1,11 @@
+name: Setup Make
+description: Install GNU Make
+
+inputs: {}
+
+dependencyTemplates:
+  - name: make
+    package: make
+    checkBinary: make
+
+instructions: []
