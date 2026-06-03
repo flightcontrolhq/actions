@@ -9,17 +9,27 @@ inputs:
 
 dependencyTemplates:
   - name: go
-    package: golang
-    installMethod: binary-download
     checkBinary: go
+    installMethod: binary-download
     binaryDownload:
+      # Go ships as a full SDK directory tree, not a single binary, so we just
+      # download the tarball (archiveFormat: none) and extract it in postInstall.
       url: https://go.dev/dl/go${{ inputs.go-version }}.linux-$ARCH.tar.gz
-      archiveFormat: tar.gz
-      installPath: /usr/local
+      archiveFormat: none
+      installPath: /tmp
+      executableName: go.tar.gz
       architectureSpecific:
         amd64: amd64
         arm64: arm64
     postInstall:
-      - export PATH=$PATH:/usr/local/go/bin
+      # Lay down the SDK at /usr/local/go and symlink the binaries onto the
+      # default PATH. Symlinks (not `export PATH`) are required because each
+      # step runs in its own login shell, so exports do not persist to the
+      # Execute phase. Go resolves GOROOT by following the symlink.
+      - sudo rm -rf /usr/local/go
+      - sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+      - sudo ln -sf /usr/local/go/bin/go /usr/local/bin/go
+      - sudo ln -sf /usr/local/go/bin/gofmt /usr/local/bin/gofmt
+      - sudo rm -f /tmp/go.tar.gz
 
 instructions: []

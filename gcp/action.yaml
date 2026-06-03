@@ -16,7 +16,12 @@ dependencyTemplates:
       url: https://sdk.cloud.google.com
       args: --disable-prompts --install-dir=/usr/local
     postInstall:
-      - export PATH=$PATH:/usr/local/google-cloud-sdk/bin
+      # Symlink onto the default PATH rather than `export PATH`, which does not
+      # persist across steps (each runs in its own login shell). This also lets
+      # the gcloud config commands below find the binary.
+      - sudo ln -sf /usr/local/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
+      - sudo ln -sf /usr/local/google-cloud-sdk/bin/gsutil /usr/local/bin/gsutil
+      - sudo ln -sf /usr/local/google-cloud-sdk/bin/bq /usr/local/bin/bq
       - gcloud config set core/disable_usage_reporting true
       - gcloud config set component_manager/disable_update_check true
 
