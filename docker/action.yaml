@@ -15,6 +15,10 @@ inputs:
 dependencies:
   - name: docker
     checkBinary: docker
+    # "Installed" must mean the daemon is responsive, not just that the binary
+    # exists — another action may have installed docker without starting the
+    # daemon. A failing check re-runs the (no-op) install plus postInstall.
+    verificationCommand: sudo docker info
     postInstall:
       - sudo systemctl daemon-reload
       - sudo systemctl start docker
