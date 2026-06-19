@@ -164,6 +164,28 @@ Installs Go via binary download.
 }
 ```
 
+### 8. Railpack (`railpack`)
+Installs Railpack via binary download.
+
+**Usage:**
+```json
+{
+  "instructions": [
+    {
+      "type": "uses",
+      "uses": "railpack",
+      "with": {
+        "railpack-version": "0.29.0"
+      }
+    },
+    {
+      "type": "command",
+      "command": "railpack --version"
+    }
+  ]
+}
+```
+
 ## Using Multiple Actions
 
 You can combine multiple actions in a single workflow:
@@ -206,6 +228,7 @@ examples/actions/
 ├── gcp/action.yaml
 ├── ruby/action.yaml
 ├── go/action.yaml
+├── railpack/action.yaml
 └── README.md
 ```
 

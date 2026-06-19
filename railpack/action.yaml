@@ -1,0 +1,51 @@
+name: Railpack Setup
+description: Install Railpack binary and setup environment for building
+
+inputs:
+  railpack-version:
+    description: Railpack version to install
+    required: false
+    default: "0.29.0"
+
+dependencies:
+  # Keep postInstall in sync with docker/action.yaml: if this action installs
+  # docker first, the docker action's dependency check will see the binary and
+  # skip its own postInstall, so the daemon must be started here too.
+  - name: docker
+    checkBinary: docker
+    verificationCommand: sudo docker info
+    postInstall:
+      - sudo systemctl daemon-reload
+      - sudo systemctl start docker
+      - sudo systemctl enable docker
+      - sudo usermod -aG docker $USER || true
+
+  - name: curl
+    package: curl
+    checkBinary: curl
+
+  - name: tar
+    package: tar
+    checkBinary: tar
+
+dependencyTemplates:
+  - name: railpack
+    installMethod: binary-download
+    checkBinary: railpack
+    binaryDownload:
+      url: https://github.com/railwayapp/railpack/releases/download/v${{ inputs.railpack-version }}/railpack-v${{ inputs.railpack-version }}-$ARCH.tar.gz
+      archiveFormat: tar.gz
+      binaryPath: railpack
+      installPath: /usr/local/bin
+      executableName: railpack
+      permissions: "755"
+      architectureSpecific:
+        amd64: x86_64-unknown-linux-musl
+        arm64: arm64-unknown-linux-musl
+
+instructions:
+  - type: command
+    command: |
+      echo "Verifying Railpack installation..."
+      railpack --version
+      echo "Railpack successfully installed"
